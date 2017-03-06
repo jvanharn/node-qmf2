@@ -1,0 +1,49 @@
+{
+  "name": "qmf2-ts",
+  "version": "1.0.0",
+  "description": "Apache Qpid QMF2 integration in TypeScript",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Matt Broadstone",
+      "email": "mbroadst@gmail.com"
+    },
+    {
+      "name": "J. van Harn"
+    }
+  ],
+  "homepage": "https://github.com/jvanharn/node-qmf2",
+  "keywords": [
+    "qmf",
+    "qmf2",
+    "qpid",
+    "broker",
+    "amqp",
+    "amqp 1.0",
+    "amqp-1-0",
+    "amqp10",
+    "messaging",
+    "queues",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jvanharn/node-qmf2.git"
+  },
+  "scripts": {
+    "test": "node ./node-modules/jasmine/bin/jasmine.js"
+  },
+  "dependencies": {
+    "amqp10": "^3.2.5",
+    "debug": "^2.2.0",
+    "es6-shim": "^0.35.1",
+    "uuid": "^2.0.3"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "jasmine": "^2.5.2",
+    "jasmine-promises": "^0.4.1",
+    "typescript": "^2.1.1"
+  }
+}

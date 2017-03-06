@@ -1,0 +1,10 @@
+{
+  "resolution": "main",
+  "tree": {
+    "src": "https://raw.githubusercontent.com/typed-contrib/node-amqp10/736ff255ec1ad507d94e0838e98f89ae95129b2b/typings.json",
+    "raw": "registry:npm/amqp10#3.3.1+20170124180914",
+    "main": "lib/index.d.ts",
+    "version": "3.3.1",
+    "name": "amqp10"
+  }
+}

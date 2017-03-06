@@ -1,0 +1,9 @@
+#Vagrant
+.vagrant
+
+# Package Managers (node, jspm, bower)
+/node_modules
+
+# Project specific
+/dist
+/tests/bin

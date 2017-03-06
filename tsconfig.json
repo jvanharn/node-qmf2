@@ -1,0 +1,26 @@
+{
+    "version": "2.1",
+    "compilerOptions": {
+        "target": "ES5",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "removeComments": false,
+        "preserveConstEnums": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "sourceMap": true,
+        "declaration": true,
+        "lib": ["es5", "es2015.promise"],
+        "outDir": "dist",
+        "rootDir": "src"
+    },
+    "include": [
+        "typings/index.d.ts",
+        "src/**/*"
+    ],
+    "exclude": [
+        "dist",
+        "node_modules",
+        "tests/**/*"
+    ]
+}

@@ -1,0 +1,21 @@
+{
+    "version": "2.1",
+    "compilerOptions": {
+        "target": "ES5",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "removeComments": false,
+        "preserveConstEnums": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "sourceMap": true,
+        "lib": ["es5", "es2015.promise"],
+        "outDir": "bin"
+    },
+    "include": [
+        "../typings/index.d.ts",
+        "config.ts",
+        "helpers/*.ts",
+        "**/*.spec.ts"
+    ]
+}
