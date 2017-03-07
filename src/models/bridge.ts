@@ -1,9 +1,9 @@
-import {QMFObject} from '../class';
+import { QMFObject, QMFMethodDefinition } from '../class';
 
 export class Bridge extends QMFObject {
     public className = 'Bridge';
     public properties = [
-        { name: 'linkRef',  type: 'objId',  references: 'Link',  access: 'RC',  index: 'y',  parentRef: 'y' },
+        { name: 'linkRef', type: 'objId', references: 'Link', access: 'RC', index: 'y', parentRef: 'y' },
         { name: 'name', type: 'sstr', access: 'RC', index: 'y' },
         { name: 'channelId', type: 'uint16', access: 'RO' },
         { name: 'durable', type: 'bool', access: 'RC' },
@@ -18,7 +18,7 @@ export class Bridge extends QMFObject {
         { name: 'sync', type: 'uint16', access: 'RC' },
         { name: 'credit', type: 'uint32', access: 'RC' }
     ];
-    public methods = [
+    public methods: QMFMethodDefinition[] = [
         { name: 'close' }
     ];
 

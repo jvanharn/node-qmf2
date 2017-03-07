@@ -10,6 +10,7 @@ import * as _ from 'lodash';
 const CorrelationIdKey = 'correlationId';
 
 export class Agent {
+    private _receiver: ReceiverLink;
     private _sender: SenderLink;
     public replyTo: string;
     public nextCorrelationId: number = 0;
@@ -53,10 +54,22 @@ export class Agent {
                         this.requests[_keys[i]](err, null);
                     }
                 });
+
+                this._receiver = receiver;
                 return receiver;
             })
         ]);
     };
+
+    /**
+     * Dispose the agent.
+     */
+    public dispose(): Promise<void> {
+        return Promise.all([
+            this._sender.detach(),
+            this._receiver.detach()
+        ]).then(_.noop);
+    }
 
     /**
      * Send a Remote Procedure Call via QMF.
@@ -67,7 +80,6 @@ export class Agent {
         messageOptions: MessageOptions,
         options?: AgentOptions
     ): Promise<any> {
-        var lol = this;
         this.nextCorrelationId++;
         var correlationId = '' + this.nextCorrelationId;
         options = options || { timeout: 5000 };

@@ -1,19 +1,19 @@
-import {QMFObject} from '../class';
+import { QMFObject, QMFMethodDefinition } from '../class';
 
 export class Session extends QMFObject {
     public className = 'Session';
     public properties = [
-        { name: 'vhostRef',  type: 'objId',  references: 'Vhost',  access: 'RC',  index: 'y',  parentRef: 'y' },
+        { name: 'vhostRef', type: 'objId', references: 'Vhost', access: 'RC', index: 'y', parentRef: 'y' },
         { name: 'name', type: 'sstr', access: 'RC', index: 'y' },
         { name: 'fullName', type: 'lstr', access: 'RO', optional: 'y' },
         { name: 'channelId', type: 'uint16', access: 'RO' },
-        { name: 'connectionRef',  type: 'objId',  references: 'Connection',  access: 'RO' },
-        { name: 'detachedLifespan',  type: 'uint32',  access: 'RO',  unit: 'second' },
+        { name: 'connectionRef', type: 'objId', references: 'Connection', access: 'RO' },
+        { name: 'detachedLifespan', type: 'uint32', access: 'RO', unit: 'second' },
         { name: 'attached', type: 'bool', access: 'RO' },
-        { name: 'expireTime',  type: 'absTime',  access: 'RO',  optional: 'y' },
-        { name: 'maxClientRate',  type: 'uint32',  access: 'RO',  unit: 'msgs/sec',  optional: 'y' }
+        { name: 'expireTime', type: 'absTime', access: 'RO', optional: 'y' },
+        { name: 'maxClientRate', type: 'uint32', access: 'RO', unit: 'msgs/sec', optional: 'y' }
     ];
-    public methods = [
+    public methods: QMFMethodDefinition[] = [
         { name: 'solicitAck' },
         { name: 'detach' },
         { name: 'resetLifespan' },

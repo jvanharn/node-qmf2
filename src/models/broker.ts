@@ -1,4 +1,4 @@
-import {QMFObject} from '../class';
+import { QMFObject, QMFMethodDefinition } from '../class';
 
 export class Broker extends QMFObject {
     public className = 'Broker';
@@ -15,7 +15,7 @@ export class Broker extends QMFObject {
         { name: 'version', type: 'sstr', access: 'RO' },
         { name: 'dataDir', type: 'lstr', access: 'RO', optional: 'y' }
     ];
-    public methods = [
+    public methods: QMFMethodDefinition[] = [
         {
             name: 'echo',
             arguments: [
@@ -118,7 +118,7 @@ export class Broker extends QMFObject {
     /**
      * Echo back the given data (via the broker).
      */
-    public echo(sequence: number, body: string): Promise<{sequence: number, body: string}> {
+    public echo(sequence: number, body: string): Promise<{ sequence: number, body: string }> {
         return this._classMethodInvoke(
             this.methods[0],
             {
@@ -221,13 +221,18 @@ export class Broker extends QMFObject {
     }
 
     /**
-     * Create a new broker.
+     * Create an object of the specified type.
+     *
+     * @param type The type of object to create.
+     * @param name The name of the object to create.
+     * @param properties Type specific object properties.
+     * @param strict If specified, treat unrecognised object properties as an error
      */
     public create(
         type: string,
         name: string,
         properties: Map<string, string>,
-        strict: boolean
+        strict: boolean = false
     ): Promise<boolean> {
         return this._classMethodInvoke(
             this.methods[7],
@@ -241,7 +246,11 @@ export class Broker extends QMFObject {
     }
 
     /**
-     * Delete a new broker.
+     * Delete an object of the specified type.
+     *
+     * @param type The type of object to delete.
+     * @param name The name of the object to delete.
+     * @param options Type specific object options for deletion.
      */
     public delete(
         type: string,
@@ -259,25 +268,30 @@ export class Broker extends QMFObject {
     }
 
     /**
-     * Create a new broker.
+     * Query the current state of an object.
+     *
+     * @param type The type of object to query.
+     * @param name The name of the object to query
+     *
+     * @return A snapshot of the object's state.
      */
     public query(
         type: string,
-        name: string,
-        results: Map<string, any>
-    ): Promise<boolean> {
+        name: string
+    ): Promise<Map<string, any>> {
         return this._classMethodInvoke(
             this.methods[9],
             {
                 type,
-                name,
-                results
+                name
             }
         );
     }
 
     /**
      * Get whether or not a high resolution timestamp is used for logging.
+     *
+     * @return True if high resolution timestamp in logs is enabled.
      */
     public getLogHiresTimestamp(): Promise<boolean> {
         return this._classMethodInvoke(
@@ -287,6 +301,8 @@ export class Broker extends QMFObject {
 
     /**
      * Set whether or not a high resolution timestamp is used for logging.
+     *
+     * @param logHires True to enable enable high resolution timestamp in logs.
      */
     public setLogHiresTimestamp(
         logHires: boolean
@@ -301,6 +317,9 @@ export class Broker extends QMFObject {
 
     /**
      * Redirect message targetted on the given queue to the other queue.
+     *
+     * @param sourceQueue Source queue.
+     * @param targetQueue Redirect target queue. Blank disables redirect.
      */
     public queueRedirect(
         sourceQueue: string,
@@ -313,5 +332,12 @@ export class Broker extends QMFObject {
                 targetQueue
             }
         );
+    }
+
+    /**
+     * Shutdown the broker.
+     */
+    public shutdown(): Promise<void> {
+        return this._classMethodInvoke(this.methods[13]);
     }
 }

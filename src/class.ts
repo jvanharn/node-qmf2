@@ -125,7 +125,7 @@ export interface QMFPropertyDefinition {
 
 export interface QMFMethodArgumentDefinition {
     name: string;
-    dir: 'I' | 'IO' | string;// | 'O';
+    dir: 'I' | 'IO' | 'O';
     type: string;
     default?: string;
 }

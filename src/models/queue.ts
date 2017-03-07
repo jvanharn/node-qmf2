@@ -1,4 +1,4 @@
-import {QMFObject} from '../class';
+import { QMFObject, QMFMethodDefinition } from '../class';
 
 export class Queue extends QMFObject {
     public className = 'Queue';
@@ -11,7 +11,7 @@ export class Queue extends QMFObject {
         { name: 'arguments', type: 'map', access: 'RO' },
         { name: 'altExchange', type: 'objId', references: 'Exchange', access: 'RO', optional: 'y' }
     ];
-    public methods = [
+    public methods: QMFMethodDefinition[] = [
         {
             name: 'purge', arguments: [
                 { name: 'request', dir: 'I', type: 'uint32' },

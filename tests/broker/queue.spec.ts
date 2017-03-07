@@ -6,8 +6,7 @@ import 'jasmine-promises';
 import '../helpers/classes.matcher';
 
 import { Client as AMQPClient } from 'amqp10';
-import { BrokerAgent } from '../../src/brokeragent';
-import { TimeoutError } from '../../src/errors';
+import { BrokerAgent, TimeoutError } from '../../src/index';
 
 import config from '../config';
 

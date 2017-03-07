@@ -26,3 +26,6 @@ https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_MRG/2/html/Mess
 
 *How to do request response with AMQP1.0*
 https://msdn.microsoft.com/en-us/library/mt727956.aspx
+
+*QMF Protocol*
+https://cwiki.apache.org/confluence/display/qpid/QMF+Protocol

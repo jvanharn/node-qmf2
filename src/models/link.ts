@@ -1,4 +1,4 @@
-import { QMFObject } from '../class';
+import { QMFObject, QMFMethodDefinition } from '../class';
 
 export class Link extends QMFObject {
     public className = 'Link';
@@ -11,7 +11,7 @@ export class Link extends QMFObject {
         { name: 'durable', type: 'bool', access: 'RC' },
         { name: 'connectionRef', type: 'objId', references: 'Connection', access: 'RO' }
     ];
-    public methods = [
+    public methods: QMFMethodDefinition[] = [
         { name: 'close' },
         {
             name: 'bridge',
