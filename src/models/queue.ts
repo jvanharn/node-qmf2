@@ -50,7 +50,7 @@ export class Queue extends QMFObject {
     public reroute(
         request: number,
         useAltExchange: boolean,
-        exchange: boolean,
+        exchange: string,
         filter: Map<string, any>
     ): Promise<void> {
         return this._classMethodInvoke(

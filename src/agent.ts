@@ -24,7 +24,7 @@ export class Agent {
      * Initialize the agent.
      */
     public initialize(): Promise<[SenderLink, ReceiverLink]> {
-        return Promise.all<any>([
+        return Promise.all([
             this.client.createSender('qmf.default.direct').then(sender => {
                 this._sender = sender;
                 return sender;

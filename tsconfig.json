@@ -12,10 +12,13 @@
         "declaration": true,
         "lib": ["es5", "es2015.promise"],
         "outDir": "dist",
-        "rootDir": "src"
+        "rootDir": "src",
+        "typeRoots": [
+            "node_modules/@types",
+            "typings/modules"
+        ]
     },
     "include": [
-        "typings/index.d.ts",
         "src/**/*"
     ],
     "exclude": [

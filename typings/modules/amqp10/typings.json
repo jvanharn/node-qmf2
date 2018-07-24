@@ -1,8 +1,8 @@
 {
   "resolution": "main",
   "tree": {
-    "src": "https://raw.githubusercontent.com/typed-contrib/node-amqp10/736ff255ec1ad507d94e0838e98f89ae95129b2b/typings.json",
-    "raw": "registry:npm/amqp10#3.3.1+20170124180914",
+    "src": "https://raw.githubusercontent.com/typed-contrib/node-amqp10/c42a25c8531690708dee1b99c9b71d720f87316d/typings.json",
+    "raw": "registry:npm/amqp10#3.3.1+20180120200542",
     "main": "lib/index.d.ts",
     "version": "3.3.1",
     "name": "amqp10"

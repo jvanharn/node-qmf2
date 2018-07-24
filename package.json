@@ -1,6 +1,6 @@
 {
   "name": "qmf2-ts",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Apache Qpid QMF2 integration in TypeScript",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -12,7 +12,8 @@
       "email": "mbroadst@gmail.com"
     },
     {
-      "name": "J. van Harn"
+      "name": "J. van Harn",
+      "email": "jeffrey@lessthanthree.nl"
     }
   ],
   "homepage": "https://github.com/jvanharn/node-qmf2",
@@ -34,7 +35,8 @@
     "url": "https://github.com/jvanharn/node-qmf2.git"
   },
   "scripts": {
-    "test": "node ./node-modules/jasmine/bin/jasmine.js"
+    "build": "tsc",
+    "test": "jasmine"
   },
   "files": [
     "dist/*",
@@ -42,15 +44,18 @@
     "typings.json"
   ],
   "dependencies": {
-    "amqp10": "^3.2.5",
-    "debug": "^2.2.0",
-    "uuid": "^2.0.3"
+    "amqp10": "^3.6.0",
+    "debug": "^3.1.0",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
-    "gulp": "^3.9.1",
+    "@types/debug": "0.0.30",
+    "@types/jasmine": "^2.8.8",
+    "@types/lodash": "^4.14.113",
+    "@types/node": "^8.10.21",
+    "@types/uuid": "^3.4.3",
     "jasmine": "^2.5.2",
     "jasmine-promises": "^0.4.1",
-    "es6-shim": "^0.35.1",
-    "typescript": "^2.1.1"
+    "typescript": "^2.8"
   }
 }
