@@ -1,6 +1,6 @@
 {
   "name": "qmf2-ts",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Apache Qpid QMF2 integration in TypeScript",
   "main": "dist/index.js",
   "module": "dist/index.js",

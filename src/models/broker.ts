@@ -118,7 +118,10 @@ export class Broker extends QMFObject {
     /**
      * Echo back the given data (via the broker).
      */
-    public echo(sequence: number, body: string): Promise<{ sequence: number, body: string }> {
+    public echo(
+        sequence: number,
+        body: string,
+    ): Promise<{ sequence: number, body: string }> {
         return this._classMethodInvoke(
             this.methods[0],
             {
@@ -138,7 +141,7 @@ export class Broker extends QMFObject {
         authMechanism: string,
         username: string,
         password: string,
-        transport: string
+        transport: string,
     ): Promise<void> {
         return this._classMethodInvoke(
             this.methods[1],
@@ -161,7 +164,7 @@ export class Broker extends QMFObject {
         srcQueue: string,
         destQueue: string,
         qty: number,
-        filter: Map<string, string>
+        filter: Map<string, string>,
     ): Promise<void> {
         return this._classMethodInvoke(
             this.methods[2],
@@ -178,7 +181,7 @@ export class Broker extends QMFObject {
      * Set the brokers log level.
      */
     public setLogLevel(
-        level: string
+        level: string,
     ): Promise<void> {
         return this._classMethodInvoke(
             this.methods[3],
@@ -201,7 +204,7 @@ export class Broker extends QMFObject {
      * Set the brokers log level.
      */
     public setTimestampConfig(
-        receive: boolean
+        receive: boolean,
     ): Promise<void> {
         return this._classMethodInvoke(
             this.methods[5],
@@ -232,7 +235,7 @@ export class Broker extends QMFObject {
         type: string,
         name: string,
         properties: Map<string, string>,
-        strict: boolean = false
+        strict: boolean = true,
     ): Promise<boolean> {
         return this._classMethodInvoke(
             this.methods[7],
@@ -255,14 +258,16 @@ export class Broker extends QMFObject {
     public delete(
         type: string,
         name: string,
-        options: Map<string, any>
+        options: Map<string, any>,
+        strict: boolean = true,
     ): Promise<boolean> {
         return this._classMethodInvoke(
             this.methods[8],
             {
                 type,
                 name,
-                options
+                options,
+                strict,
             }
         );
     }
@@ -277,7 +282,7 @@ export class Broker extends QMFObject {
      */
     public query(
         type: string,
-        name: string
+        name: string,
     ): Promise<Map<string, any>> {
         return this._classMethodInvoke(
             this.methods[9],
@@ -305,7 +310,7 @@ export class Broker extends QMFObject {
      * @param logHires True to enable enable high resolution timestamp in logs.
      */
     public setLogHiresTimestamp(
-        logHires: boolean
+        logHires: boolean,
     ): Promise<void> {
         return this._classMethodInvoke(
             this.methods[11],
@@ -323,7 +328,7 @@ export class Broker extends QMFObject {
      */
     public queueRedirect(
         sourceQueue: string,
-        targetQueue: string
+        targetQueue: string,
     ): Promise<void> {
         return this._classMethodInvoke(
             this.methods[12],

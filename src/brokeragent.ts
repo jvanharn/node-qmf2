@@ -1,4 +1,4 @@
-import {Agent} from './agent';
+import { Agent } from './agent';
 import {
     Broker,
     Exchange,
@@ -7,9 +7,9 @@ import {
     Subscription,
     Queue,
     Binding,
-    Link
+    Link,
 } from './models';
-import {Client as AMQPClient} from 'amqp10';
+import { Client as AMQPClient } from 'amqp10';
 
 export class BrokerAgent extends Agent {
     public constructor(client: AMQPClient, responseTopic?: any) {
@@ -79,4 +79,39 @@ export class BrokerAgent extends Agent {
     public getAllLinks(): Promise<Link[]> {
         return this._getObjects('link');
     }
+
+//#region Custom (e.g. non protocol defined) helper methods
+    /**
+     * Bind a queue to another.
+     *
+     * @param exchange
+     * @param queue
+     * @param bindingKey
+     * @param options
+     */
+    public bind(
+        exchange: string,
+        queue: string,
+        bindingKey: string,
+        options: Map<string, any>,
+    ): Promise<void> {
+        return this.getAllBrokers().then(([broker]) => broker.create('binding', `${exchange}/${queue}/${bindingKey}`, options, true) as Promise<any>);
+    }
+
+    /**
+     * Unbind a queue to another.
+     *
+     * @param exchange
+     * @param queue
+     * @param bindingKey
+     * @param options
+     */
+    public unbind(
+        exchange: string,
+        queue: string,
+        bindingKey: string,
+    ): Promise<void> {
+        return this.getAllBrokers().then(([broker]) => broker.delete('binding', `${exchange}/${queue}/${bindingKey}`, void 0, true) as Promise<any>);
+    }
+//#endregion
 }
