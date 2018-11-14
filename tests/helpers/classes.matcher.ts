@@ -1,5 +1,5 @@
 declare namespace jasmine {
-    interface Matchers {
+    interface Matchers<T> {
         toBeInstanceOf(cls: any): boolean;
     }
 }

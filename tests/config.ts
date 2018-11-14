@@ -1,5 +1,4 @@
-import 'es6-shim';
 export default {
-    address: (process.env.AMQP_SERVER ? 'amqp://'+process.env.AMQP_SERVER  : 'amqp://localhost'),
+    address: (process.env.AMQP_SERVER ? process.env.AMQP_SERVER : 'localhost'),
 };
 console.log(process.env.AMQP_SERVER);

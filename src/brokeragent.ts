@@ -9,11 +9,11 @@ import {
     Binding,
     Link,
 } from './models';
-import { Client as AMQPClient } from 'amqp10';
+import { Connection as RheaConnection } from 'rhea';
 
 export class BrokerAgent extends Agent {
-    public constructor(client: AMQPClient, responseTopic?: any) {
-        super('broker', client, responseTopic);
+    public constructor(conn: RheaConnection, responseTopic?: any) {
+        super('broker', conn, responseTopic);
     }
 
     public getAllBrokers(): Promise<Broker[]> {

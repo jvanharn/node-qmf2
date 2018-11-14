@@ -1,5 +1,3 @@
-import util = require('util');
-
 export class BaseError extends Error {
     public name: string;
 

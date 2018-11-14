@@ -1,98 +1,141 @@
-import uuid = require('uuid');
-import { Client as AMQPClient, SenderLink, ReceiverLink, MessageOptions } from 'amqp10';
+import { EventEmitter } from 'events';
+import { v4 as uuidv4 } from 'uuid';
+import { Connection, Receiver, Sender } from 'rhea';
+
 import * as log from './log';
 import * as classes from './models/models';
 import * as errors from './errors';
 import * as u from './utilities';
 
-import * as _ from 'lodash';
-
 const CorrelationIdKey = 'correlationId';
 
-export class Agent {
-    private _receiver: ReceiverLink;
-    private _sender: SenderLink;
-    public replyTo: string;
-    public nextCorrelationId: number = 0;
-    public requests: { [correlationId: number]: any } = {};
-
-    public constructor(public name: string, public client: AMQPClient, responseTopic?: any) {
-        this.replyTo = responseTopic || 'qmf.default.topic/' + uuid.v4();
-    }
+export class Agent extends EventEmitter {
+    private _disposed: boolean = false;
+    private _receiver: Receiver;
+    private _sender: Sender;
 
     /**
-     * Initialize the agent.
+     * Queue used by this agent to receive reply's to QMF calls.
      */
-    public initialize(): Promise<[SenderLink, ReceiverLink]> {
-        return Promise.all([
-            this.client.createSender('qmf.default.direct').then(sender => {
+    public replyTo: string;
+
+    /**
+     * Our next correlation identity.
+     */
+    public nextCorrelationId: number = 0;
+
+    /**
+     * All our outstanding requests.
+     */
+    public requests: { [correlationId: number]: any } = {};
+
+    public constructor(public name: string, public conn: Connection, responseTopic?: any) {
+        super();
+
+        // Create sender
+        var sender = this.conn.open_sender('qmf.default.direct');
+        sender.once('sendable', () => {
+            if (this._disposed) {
+                sender.detach();
+            }
+            else {
                 this._sender = sender;
-                return sender;
-            }),
-            this.client.createReceiver(this.replyTo).then((receiver: ReceiverLink) => {
-                receiver.on('message', (message) => {
-                    var correlationId = message.properties[CorrelationIdKey];
-                    if (correlationId === undefined || correlationId === null) {
-                        log.error('message lacks correlation-id');
-                        return;
-                    }
+                if (this._sender && this._receiver) {
+                    this.emit('open');
+                }
+            }
+        });
 
-                    if (!this.requests.hasOwnProperty(correlationId)) {
-                        log.error('invalid correlation-id: ', correlationId);
-                        return;
-                    }
-
-                    // complete request
-                    this.requests[correlationId](null, message);
-                    delete this.requests[correlationId];
-                });
-
-                receiver.on('error', (err) => {
-                    var _keys = Object.keys(this.requests),
-                        _len = _keys.length;
-                    for (var i = 0; i < _len; ++i) {
-                        this.requests[_keys[i]](err, null);
-                    }
-                });
-
+        // Create and configure the receiver
+        this.replyTo = responseTopic || 'qmf.default.topic/' + uuidv4();
+        var receiver = this.conn.open_receiver(this.replyTo);
+        receiver.once('receiver_open', () => {
+            if (this._disposed) {
+                receiver.detach();
+            }
+            else {
                 this._receiver = receiver;
-                return receiver;
-            })
-        ]);
-    };
+                if (this._sender && this._receiver) {
+                    this.emit('open');
+                }
+            }
+        });
+
+        // Handle incomming message.
+        receiver.on('message', (message) => {
+            var correlationId = message.properties[CorrelationIdKey];
+            if (correlationId === undefined || correlationId === null) {
+                log.error('message lacks correlation-id');
+                return;
+            }
+
+            if (!this.requests.hasOwnProperty(correlationId)) {
+                log.error('invalid correlation-id: ', correlationId);
+                return;
+            }
+
+            // complete request
+            this.requests[correlationId](null, message);
+            delete this.requests[correlationId];
+        });
+
+        // Error handler.
+        receiver.on('error', (err) => {
+            var _keys = Object.keys(this.requests),
+                _len = _keys.length;
+            for (var i = 0; i < _len; ++i) {
+                this.requests[_keys[i]](err, null);
+            }
+        });
+    }
 
     /**
      * Dispose the agent.
      */
-    public dispose(): Promise<void> {
-        return Promise.all([
-            this._sender.detach(),
-            this._receiver.detach()
-        ]).then(_.noop);
+    public dispose(): void {
+        if (this._disposed) {
+            return;
+        }
+
+        this.emit('close');
+        this.emit('disposed');
+
+        this._disposed = true;
+        if (this._sender) {
+            this._sender.detach();
+        }
+        if (this._receiver) {
+            this._receiver.detach();
+        }
     }
 
     /**
-     * Send a Remote Procedure Call via QMF.
+     * Prepare and execute an call using the correct QMF headers.
+     * @internal
      */
-    protected _rpcSend(
-        content: any,
-        subject: string,
-        messageOptions: MessageOptions,
-        options?: AgentOptions
-    ): Promise<any> {
+    public _request(opcode: string, subject: string, content: any, options?: AgentOptions): Promise<any> {
+        if (this._disposed) {
+            return Promise.reject(new Error('The agent is already disposed, cannot execute a call on an disposed agent!'));
+        }
+
         this.nextCorrelationId++;
         var correlationId = '' + this.nextCorrelationId;
         options = options || { timeout: 5000 };
-        messageOptions.properties = {
+
+        var message = {
             subject: !!subject ? subject : 'broker',
-            replyTo: this.replyTo,
-            correlationId: correlationId
+            body: content,
+            application_properties: {
+                'method': 'request',
+                'qmf.opcode': opcode,
+                'x-amqp-0-10.app-id': 'qmf2'
+            },
+            reply_to: this.replyTo,
+            correlation_id: correlationId
         };
 
         var response = new Promise((resolve, reject) => {
             this.requests[correlationId] = (err, message) => {
-                let opcode = messageOptions.applicationProperties['qmf.opcode'];
-
                 if (!!err) {
                     return reject(err);
                 }
@@ -110,7 +153,7 @@ export class Agent {
                     return resolve(u.unwrap_data(message.body._arguments));
                 }
 
-                if (!(_.isPlainObject(message.body) || _.isArray(message.body))) {
+                if (!(typeof message.body === 'object' || Array.isArray(message.body))) {
                     reject(new errors.InvalidResponseError(messageOpcode));
                 }
                 resolve(message.body);
@@ -124,23 +167,15 @@ export class Agent {
             }, options.timeout);
         });
 
-        this._sender.send(content, messageOptions);
-        return response;
-    };
+        if (this._sender) {
+            this._sender.send(message);
+        }
+        else {
+            this.once('open', () => this._sender.send(message));
+        }
 
-    /**
-     * @internal
-     */
-    public _request(opcode: string, subject: string, content: any, options?: AgentOptions): Promise<any> {
-        return this._rpcSend(content, subject, {
-            body: content,
-            applicationProperties: {
-                'method': 'request',
-                'qmf.opcode': opcode,
-                'x-amqp-0-10.app-id': 'qmf2'
-            }
-        }, options);
-    };
+        return response;
+    }
 
     protected _nameQuery(name: string, options?: AgentOptions): Promise<any> {
         return this._request('_query_request', 'broker', {
@@ -149,7 +184,7 @@ export class Agent {
                 '_object_name': name
             }
         }, options);
-    };
+    }
 
     protected _classQuery(className: string, options?: AgentOptions): Promise<any> {
         return this._request('_query_request', 'broker', {
@@ -158,7 +193,7 @@ export class Agent {
                 '_class_name': className
             }
         }, options);
-    };
+    }
 
     /**
      * Get multiple objects (class query) of the given type/class.
@@ -166,12 +201,12 @@ export class Agent {
     protected _getObjects<T>(type: string, options?: AgentOptions): Promise<T[]> {
         return this._classQuery(type, options)
             .then(objects => {
-                if (!_.isArray(objects)) {
+                if (!Array.isArray(objects)) {
                     objects = [objects];
                 }
-                return _.map(objects, object => new classes[type](this, object));
+                return (objects || []).map(object => new classes[type](this, object));
             });
-    };
+    }
 
     /**
      * Get a single object (name query) from the server.
@@ -181,10 +216,7 @@ export class Agent {
         return this
             ._nameQuery(name, options)
             .then(object => {
-                if (_.isPlainObject(object)) {
-                    return new classes[type](this, object);
-                }
-                else if (_.isArray(object)) {
+                if (Array.isArray(object)) {
                     if (object.length === 1) {
                         return new classes[type](this, object[0]);
                     }
@@ -195,8 +227,11 @@ export class Agent {
                         throw new errors.AgentExceptionError('Expected object, but got something else.');
                     }
                 }
+                else if (typeof object === 'object') {
+                    return new classes[type](this, object);
+                }
             });
-    };
+    }
 }
 
 export interface AgentOptions {

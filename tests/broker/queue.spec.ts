@@ -5,22 +5,33 @@ import 'jasmine-promises';
 
 import '../helpers/classes.matcher';
 
-import { Client as AMQPClient } from 'amqp10';
+import { Connection as RheaConnection, create_container } from 'rhea';
 import { BrokerAgent, TimeoutError } from '../../src/index';
 
 import config from '../config';
 
-import _ = require('lodash');
+import * as debuglib from 'debug';
+const debug = debuglib('test:queue');
 
 describe('Broker', () => {
-    var test: { client?: AMQPClient, agent?: BrokerAgent } = {};
-    beforeAll(() =>
-        (test.client = new AMQPClient())
-            .connect(config.address)
-            .then(() => {
-                test.agent = new BrokerAgent(test.client);
-                return test.agent.initialize();
-            }));
+    var test: { conn?: RheaConnection, agent?: BrokerAgent } = {};
+    beforeAll(done => {
+        var container = create_container();
+
+        var addr = config.address.split(':'),
+            host = addr[0].trim().length > 0 ? addr[0].trim() : 'localhost',
+            port = addr.length > 0 ? parseInt(addr[1], 10) : void 0;
+
+        test.conn = container.connect({ host, port });
+        debug(`connecting to "${config.address}" or "${test.conn.hostname}" or "${host}" "${port}" -> ${test.conn.is_open()}`);
+
+        container.once('connection_open', () => {
+            test.agent = new BrokerAgent(test.conn);
+
+            debug(`connected!`);
+            done();
+        });
+    });
 
 
     it('should support an echo command', () =>
@@ -28,9 +39,9 @@ describe('Broker', () => {
             .getAllBrokers()
             .then(brokers =>
                 Promise
-                    .all(_.map(brokers, broker => broker.echo(0, 'test')))
+                    .all((brokers || []).map(broker => broker.echo(0, 'test')))
                     .then(responses =>
-                        _.each(responses, r => expect(r).toEqual({ sequence: 0, body: 'test' })))));
+                        (responses || []).forEach(r => expect(r).toEqual({ sequence: 0, body: 'test' })))));
 
     it('should support a name query', () =>
         test.agent
@@ -47,7 +58,7 @@ describe('Broker', () => {
                 .then(queues => resolve(expect(queues).toEqual(false)))
                 .catch(err => resolve(expect(err).toBeInstanceOf(TimeoutError)))
         ),
-        10000)
+        10000);
 
     it('should support JSON.stringify for class instances', () =>
         test.agent

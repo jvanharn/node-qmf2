@@ -1,5 +1,5 @@
 {
-    "version": "2.1",
+    "version": "3.1",
     "compilerOptions": {
         "target": "ES5",
         "module": "commonjs",
@@ -10,12 +10,11 @@
         "experimentalDecorators": true,
         "sourceMap": true,
         "declaration": true,
-        "lib": ["es5", "es2015.promise"],
+        "lib": ["es2015"],
         "outDir": "dist",
         "rootDir": "src",
         "typeRoots": [
-            "node_modules/@types",
-            "typings/modules"
+            "node_modules/@types"
         ]
     },
     "include": [
