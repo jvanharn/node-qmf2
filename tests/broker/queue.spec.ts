@@ -6,7 +6,7 @@ import 'jasmine-promises';
 import '../helpers/classes.matcher';
 
 import { Connection as RheaConnection, create_container } from 'rhea';
-import { BrokerAgent, TimeoutError } from '../../src/index';
+import { BrokerAgent } from '../../src/index';
 
 import config from '../config';
 
@@ -31,6 +31,10 @@ describe('Broker', () => {
             debug(`connected!`);
             done();
         });
+        container.once('disconnected', () => {
+            debug(`disconnected!`);
+            throw new Error('Unable to connect to amqp!');
+        });
     });
 
 
@@ -42,6 +46,11 @@ describe('Broker', () => {
                     .all((brokers || []).map(broker => broker.echo(0, 'test')))
                     .then(responses =>
                         (responses || []).forEach(r => expect(r).toEqual({ sequence: 0, body: 'test' })))));
+
+    it('should be able to create a persistent queue', () =>
+        test.agent.getAllBrokers()
+            .then(x => x[0].create(
+                'queue', 'test.queue', new Map([['qpid.priorities', String(2)]]))));
 
     it('should support a name query', () =>
         test.agent
@@ -56,7 +65,7 @@ describe('Broker', () => {
             (<any>test.agent)
                 ._getObjects('queue', { timeout: 1 })
                 .then(queues => resolve(expect(queues).toEqual(false)))
-                .catch(err => resolve(expect(err).toBeInstanceOf(TimeoutError)))
+                .catch(err => resolve(expect(err.name).toBe('QMFTimeoutError')))
         ),
         10000);
 

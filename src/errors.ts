@@ -16,6 +16,7 @@ export class AgentExceptionError extends BaseError {
         super(errorText = (values.error_text instanceof Buffer)
             ? values.error_text.toString()
             : values.error_text);
+        Object.setPrototypeOf(this, AgentExceptionError.prototype);
 
         this.name = 'QMFAgentExceptionError';
         this.errorCode = values.error_code;

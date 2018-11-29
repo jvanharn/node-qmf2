@@ -1,7 +1,7 @@
 {
   "name": "qmf2-ts",
-  "version": "2.1.0",
-  "description": "Apache Qpid QMF2 integration in TypeScript",
+  "version": "3.0.0",
+  "description": "Apache Qpid QMF2 implementation for Rhea",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -21,6 +21,7 @@
     "qmf",
     "qmf2",
     "qpid",
+    "rhea",
     "broker",
     "amqp",
     "amqp 1.0",

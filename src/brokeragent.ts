@@ -12,8 +12,8 @@ import {
 import { Connection as RheaConnection } from 'rhea';
 
 export class BrokerAgent extends Agent {
-    public constructor(conn: RheaConnection, responseTopic?: any) {
-        super('broker', conn, responseTopic);
+    public constructor(conn: RheaConnection) {
+        super('broker', conn);
     }
 
     public getAllBrokers(): Promise<Broker[]> {

@@ -7,7 +7,7 @@ import * as classes from './models/models';
 import * as errors from './errors';
 import * as u from './utilities';
 
-const CorrelationIdKey = 'correlationId';
+const CorrelationIdKey = 'correlation_id';
 
 export class Agent extends EventEmitter {
     private _disposed: boolean = false;
@@ -29,14 +29,14 @@ export class Agent extends EventEmitter {
      */
     public requests: { [correlationId: number]: any } = {};
 
-    public constructor(public name: string, public conn: Connection, responseTopic?: any) {
+    public constructor(public name: string, public conn: Connection) {
         super();
 
         // Create sender
         var sender = this.conn.open_sender('qmf.default.direct');
         sender.once('sendable', () => {
             if (this._disposed) {
-                sender.detach();
+                sender.close();
             }
             else {
                 this._sender = sender;
@@ -47,14 +47,26 @@ export class Agent extends EventEmitter {
         });
 
         // Create and configure the receiver
-        this.replyTo = responseTopic || 'qmf.default.topic/' + uuidv4();
-        var receiver = this.conn.open_receiver(this.replyTo);
+        var uuid = uuidv4();
+        this.replyTo = `qmf.default.topic/${uuid}`;
+        var receiver = this.conn.open_receiver({
+            source: {
+                address: 'qmf.default.topic',
+                filter: {
+                    'apache.org:legacy-amqp-topic-binding:string': uuid,
+                },
+            }
+        });
+
         receiver.once('receiver_open', () => {
             if (this._disposed) {
-                receiver.detach();
+                receiver.close();
             }
             else {
                 this._receiver = receiver;
+                // this.replyTo = receiver.source.address;
+                log.info(`using reply queue: ${this.replyTo}`);
+
                 if (this._sender && this._receiver) {
                     this.emit('open');
                 }
@@ -62,8 +74,8 @@ export class Agent extends EventEmitter {
         });
 
         // Handle incomming message.
-        receiver.on('message', (message) => {
-            var correlationId = message.properties[CorrelationIdKey];
+        receiver.on('message', ({message}) => {
+            var correlationId = message[CorrelationIdKey];
             if (correlationId === undefined || correlationId === null) {
                 log.error('message lacks correlation-id');
                 return;
@@ -102,10 +114,10 @@ export class Agent extends EventEmitter {
 
         this._disposed = true;
         if (this._sender) {
-            this._sender.detach();
+            this._sender.close();
         }
         if (this._receiver) {
-            this._receiver.detach();
+            this._receiver.close();
         }
     }
 
@@ -139,7 +151,7 @@ export class Agent extends EventEmitter {
                 if (!!err) {
                     return reject(err);
                 }
-                var messageOpcode = message.applicationProperties['qmf.opcode'];
+                var messageOpcode = message.application_properties['qmf.opcode'];
                 if (messageOpcode === '_exception') {
                     return reject(new errors.AgentExceptionError(message.body._values));
                 }
