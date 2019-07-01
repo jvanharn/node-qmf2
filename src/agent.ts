@@ -29,6 +29,11 @@ export class Agent extends EventEmitter {
      */
     public requests: { [correlationId: number]: any } = {};
 
+    /**
+     * Dictionary of all partially received requests.
+     */
+    public partials: { [correlationId: number]: any[] } = {};
+
     public constructor(public name: string, public conn: Connection) {
         super();
 
@@ -86,9 +91,29 @@ export class Agent extends EventEmitter {
                 return;
             }
 
-            // complete request
-            this.requests[correlationId](null, message);
-            delete this.requests[correlationId];
+            // check is partial
+            if ('partial' in message.application_properties) {
+                if (Array.isArray(this.partials[correlationId])) {
+                    this.partials[correlationId].push(...message.body);
+                }
+                else {
+                    this.partials[correlationId] = message.body;
+                }
+                return;
+            }
+
+            if (Array.isArray(this.partials[correlationId]) && Array.isArray(message.body)) {
+                // complete partial request
+                message.body = this.partials[correlationId].concat(message.body);
+                this.requests[correlationId](null, message);
+                delete this.requests[correlationId];
+                delete this.partials[correlationId];
+            }
+            else {
+                // complete request normal
+                this.requests[correlationId](null, message);
+                delete this.requests[correlationId];
+            }
         });
 
         // Error handler.
