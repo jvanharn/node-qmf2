@@ -1,6 +1,6 @@
 {
   "name": "qmf2-ts",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Apache Qpid QMF2 implementation for Rhea",
   "main": "dist/index.js",
   "module": "dist/index.js",
